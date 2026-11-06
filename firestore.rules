@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // No sign-in is used. A long, random Vault ID is the access key.
+    // Only direct reads/writes are allowed on a vault document; listing all vaults is blocked.
+    match /vaults/{vaultId} {
+      allow get, create, update, delete: if vaultId.size() >= 40;
+      allow list: if false;
+
+      // Subcollections can be accessed only when the caller knows the Vault ID path.
+      // Anyone who obtains that Vault ID can read/change that vault's data.
+      match /{subcollection}/{documentId} {
+        allow read, create, update, delete: if vaultId.size() >= 40;
+      }
+    }
+  }
+}
